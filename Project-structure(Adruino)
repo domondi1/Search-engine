@@ -1,0 +1,7 @@
+search_engine_project/
+├── static/
+│   ├── styles.css
+├── templates/
+│   ├── index.html
+│   ├── results.html
+├── app.py
