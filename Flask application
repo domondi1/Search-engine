@@ -1,0 +1,55 @@
+import re
+from flask import Flask, request, render_template
+
+app = Flask(__name__)
+
+# Simulated data: documents and their content
+documents = {
+    1: "Python is a popular programming language.",
+    2: "Search engines help users find information.",
+    3: "PageRank is used by Google to rank websites.",
+    4: "Programming languages are used to build software.",
+}
+
+# Step 1: Indexing
+index = {}
+for doc_id, content in documents.items():
+    words = re.findall(r'\w+', content.lower())
+    for word in words:
+        if word not in index:
+            index[word] = []
+        index[word].append(doc_id)
+
+# Simplified PageRank
+def pagerank(doc_id, query_results):
+    relevance_score = 0
+    for result in query_results:
+        if result == doc_id:
+            relevance_score += 1
+    return relevance_score
+
+@app.route('/', methods=['GET', 'POST'])
+def search_page():
+    if request.method == 'POST':
+        user_query = request.form['query']
+        query_results = search(user_query)
+        
+        ranked_results = []
+        for doc_id in query_results:
+            rank_score = pagerank(doc_id, query_results)
+            ranked_results.append((doc_id, rank_score))
+        
+        ranked_results.sort(key=lambda x: x[1], reverse=True)
+        return render_template('results.html', user_query=user_query, ranked_results=ranked_results)
+    return render_template('index.html')
+
+def search(query):
+    query_words = query.lower().split()
+    results = []
+    for word in query_words:
+        if word in index:
+            results.extend(index[word])
+    return list(set(results))  # Remove duplicates
+
+if __name__ == '__main__':
+    app.run(debug=True)
